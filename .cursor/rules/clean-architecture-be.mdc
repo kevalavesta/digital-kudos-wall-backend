@@ -1,0 +1,152 @@
+# 🧪 Standard Operating Procedure: Clean Architecture
+
+**Status:** Mandatory
+**Version:** 1.0
+
+## 📌 Purpose
+
+Adherence to this SOP is mandatory for all backend features. Deviations are not permitted without explicit architectural review and approval. This is to ensure a scalable, maintainable, and testable codebase aligned with our long-term vision for microservices.
+
+This SOP defines the standards for implementing a Clean Architecture in the Digital Kudos Wall backend application. The primary goal is to decouple business logic from the web framework (Express.js), enabling independent development, testing, and evolution of the core application functionality.
+
+---
+
+## 2. Scope
+
+This SOP applies to all feature development within the backend codebase.
+
+## 3. The Layers of Backend Architecture
+
+All backend code MUST be organized into the following layers. The fundamental rule is the **Dependency Rule**: source code dependencies can only point inwards. Nothing in an inner layer can know anything at all about something in an outer layer.
+
+```
++-----+
+| 4. Frameworks & Drivers (Express.js, Prisma, Nodemailer)                                |
++-----+
+       ^
+       | Dependencies
+       v
++-----+
+| 3. Interface Adapters (Controllers, Repositories, Service Adapters)                     |
++-----+
+       ^
+       | Dependencies
+       v
++-----+
+| 2. Application Business Rules (Use Cases & Service Interfaces)                            |
++-----+
+       ^
+       | Dependencies
+       v
++-----+
+| 1. Enterprise Business Rules (Entities / Domain)                                          |
++-----+
+```
+
+### Layer 1: Enterprise Business Rules (Domain)
+
+- **Content:** Core business objects, entities, value objects, domain services, and repository interfaces.
+- **Location:** `src/modules/{feature-name}/domain/`
+- **Dependencies:** None.
+- **Example Implementation:**
+  - `src/modules/user/domain/user.entity.ts`
+  - `src/modules/user/domain/user.repository.ts`
+  - `src/modules/user/domain/value-objects/email.ts`
+- **Example:**
+
+  ```typescript
+  // src/modules/user/domain/user.repository.ts
+  import { User } from "./user.entity";
+
+  export interface IUserRepository {
+    findByEmail(email: string): Promise<User | null>;
+    save(user: User): Promise<void>;
+  }
+  ```
+
+### Layer 2: Application Business Rules (Use Cases)
+
+- **Standard:** This is the heart of the application logic. It defines the operations the application can perform.
+- **Content:**
+  - **Use Cases:** Contains application-specific orchestration logic. Each use case MUST be a `class` that encapsulates a single user interaction flow (e.g., `RegisterUserUseCase`). It MUST NOT contain any reference to the web framework or specific data-access libraries. It depends on repository and service interfaces to interact with outer layers.
+- **Location:**
+  - Use Cases: `src/modules/{feature-name}/application/use-cases/`
+- **Example Implementation:**:
+  - Use Case: `src/modules/user/application/use-cases/register-user/register-user.use-case.ts`
+- **Example:**
+
+  ```typescript
+  // src/modules/user/application/use-cases/register-user/register-user.use-case.ts
+  import { IUserRepository } from "../../domain/user.repository";
+  import { User } from "../../domain/user.entity";
+
+  export class RegisterUserUseCase {
+    constructor(private readonly userRepository: IUserRepository) {}
+
+    async execute(data: any): Promise<User> {
+      // Application-specific logic lives here
+      const user = User.create(data);
+      await this.userRepository.save(user);
+      return user;
+    }
+  }
+  ```
+
+### Layer 3: Interface Adapters (Presentation & Infrastructure)
+
+- **Standard:** This layer acts as the bridge between the application logic (Use Cases) and the technical details of the outer layer (Frameworks). It adapts data and calls into a format the Use Cases and external systems can understand.
+- **Content:**
+  - **Controllers:** The entry point from the web. Responsible for handling HTTP requests, validating input, and calling the appropriate use case.
+  - **Repositories:** Concrete implementations of data-access interfaces. They adapt a specific data source (e.g., a database via `Prisma`) to the interface required by the use case.
+  - **Service Adapters:** Concrete implementations of the service interfaces defined in the domain layer (e.g., for sending emails).
+- **Location:**
+  - Controllers: `src/modules/{feature-name}/presentation/controllers/`
+  - Repositories: `src/modules/{feature-name}/infrastructure/persistence/`
+  - Service Adapters: `src/modules/{feature-name}/infrastructure/services/`
+- **Dependencies:** Depends on Use Cases (inward) and specific frameworks (outward).
+- **Example Implementation:**:
+  - Controller: `src/modules/user/presentation/controllers/user.controller.ts`
+  - Repository: `src/modules/user/infrastructure/persistence/prisma/prisma-user.repository.ts`
+  - Service Adapter: `src/modules/user/infrastructure/services/nodemailer-email.service.ts`
+
+### Layer 4: Frameworks & Drivers (Express.js, Prisma, etc.)
+
+- **Standard:** The outermost layer, composed of implementation details and framework-specific code.
+- **Content:**
+  - **Web Framework:** Express.js for routing and handling HTTP requests.
+  - **ORM/Database Client:** Prisma for database interactions.
+  - **External Services:** Libraries like Nodemailer for sending emails.
+- **Location:**
+  - Routes: `src/modules/{feature-name}/presentation/routes/`
+  - Main App file: `src/app.ts`
+
+## 4. Directory Structure (Non-Negotiable)
+
+To enforce this separation, all feature-based modules MUST follow this directory structure:
+
+```
+src/
+├── modules/
+│   └── {feature-name}/
+│       ├── application/
+│       │   └── use-cases/
+│       │       └── {use-case-name}/
+│       │           └── {use-case-name}.use-case.ts
+│       ├── domain/
+│       │   ├── value-objects/
+│       │   ├── errors/
+│       │   ├── user.entity.ts
+│       │   └── user.repository.ts
+│       ├── infrastructure/
+│       │   ├── persistence/
+│       │   └── services/
+│       └── presentation/
+│           ├── controllers/
+│           └── routes/
+│
+└── shared/
+```
+
+## 5. Enforcement
+
+Violation of these standards will result in build failures during CI (where possible) and/or rejection during code review. These standards are non-negotiable to maintain the integrity, scalability, and testability of the backend architecture.

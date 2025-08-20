@@ -85,6 +85,72 @@ This SOP applies to all unit tests written for the application layer, specifical
 - **Rationale:** Fast tests are run frequently, providing quick feedback. Determinism ensures reliability.
 - **Implementation:** Achieved by using in-memory Test Doubles for I/O-bound or slow dependencies.
 
+### Test State, Not Interactions
+
+- **Standard:** Tests MUST primarily verify the observable state and behavior of the system, not the specific interactions with collaborators.
+- **Focus on:**
+  - The `Result` object returned by the use case
+  - The actual domain objects created/modified
+  - Observable side effects and state changes
+- **Minimize:** Interaction verification (mocking framework assertions)
+- **Rationale:**
+  - State testing is less brittle and more maintainable
+  - Focuses on what the system does, not how it does it
+  - Allows for refactoring without breaking tests
+  - Better expresses the actual behavior we care about
+- **Example:**
+
+  ```typescript
+  // ❌ Brittle - Testing interactions (couples to implementation)
+  it("should register user - brittle approach", async () => {
+    // Arrange
+    const dto = { email: "test@example.com", password: "ValidPass123!", name: "John Doe" };
+    userRepository.findByEmail = jest.fn().mockResolvedValue(null);
+    userRepository.save = jest.fn().mockResolvedValue(undefined);
+    emailService.sendConfirmationEmail = jest.fn().mockResolvedValue(undefined);
+
+    // Act
+    await useCase.execute(dto);
+
+    // Assert - Focus on HOW (brittle, implementation-dependent)
+    expect(userRepository.findByEmail).toHaveBeenCalledWith("test@example.com");
+    expect(userRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: expect.objectContaining({ value: "test@example.com" }),
+        name: "John Doe",
+      })
+    );
+    expect(emailService.sendConfirmationEmail).toHaveBeenCalledWith("test@example.com");
+  });
+
+  // ✅ Robust - Testing state/behavior (focuses on outcomes)
+  it("should register user - robust approach", async () => {
+    // Arrange
+    const dto = { email: "test@example.com", password: "ValidPass123!", name: "John Doe" };
+    userRepository.findByEmail = jest.fn().mockResolvedValue(null);
+    userRepository.save = jest.fn().mockResolvedValue(undefined);
+    emailService.sendConfirmationEmail = jest.fn().mockResolvedValue(undefined);
+
+    // Act
+    const result = await useCase.execute(dto);
+
+    // Assert - Focus on WHAT (robust, behavior-focused)
+    expect(result.isSuccess).toBe(true);
+
+    const user = result.getValue();
+    expect(user).toBeInstanceOf(User);
+    expect(user.email.value).toBe("test@example.com");
+    expect(user.name).toBe("John Doe");
+    expect(user.isEmailVerified).toBe(false);
+
+    // Minimal interaction verification for critical side effects only
+    expect(userRepository.save).toHaveBeenCalledTimes(1);
+    expect(emailService.sendConfirmationEmail).toHaveBeenCalledTimes(1);
+  });
+  ```
+
+- **Exception:** Minimal interaction verification is acceptable for critical side effects for public interfaces (e.g., ensuring email was sent), but should be kept to a minimum (e.g., `toHaveBeenCalledTimes(1)`).
+
 ## Test Structure (Arrange-Act-Assert)
 
 - **Standard:** All tests MUST follow the Arrange-Act-Assert (AAA) pattern.

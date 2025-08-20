@@ -2,6 +2,8 @@ import { RegisterUserUseCase } from "./register-user.use-case";
 import { UserRepository } from "../../../domain/user.repository";
 import { EmailService } from "../../../domain/email.service";
 import { UserAlreadyExistsError } from "../../../domain/errors/user-already-exists.error";
+import { ValidationError } from "../../../domain/errors/validation.error";
+import { User } from "../../../domain/user.entity";
 import { UserBuilder } from "../../../infrastructure/persistence/prisma/__tests__/user.builder";
 
 describe("RegisterUserUseCase (Sociable Unit Test)", () => {
@@ -42,9 +44,15 @@ describe("RegisterUserUseCase (Sociable Unit Test)", () => {
 
       expect(result.isSuccess).toBe(true);
 
-      expect(userRepository.findByEmail).toHaveBeenCalledWith(registerUserDTO.email);
-      expect(userRepository.save).toHaveBeenCalled();
-      expect(emailService.sendConfirmationEmail).toHaveBeenCalledWith(registerUserDTO.email);
+      const user = result.getValue();
+      expect(user).toBeInstanceOf(User);
+      expect(user.email.value).toBe("test@example.com");
+      expect(user.name).toBe("Test User");
+      expect(user.isEmailVerified).toBe(false);
+
+      // Minimal interaction verification for critical side effects only
+      expect(userRepository.save).toHaveBeenCalledTimes(1);
+      expect(emailService.sendConfirmationEmail).toHaveBeenCalledTimes(1);
     });
 
     it("should return error when user already exists", async () => {
@@ -59,6 +67,8 @@ describe("RegisterUserUseCase (Sociable Unit Test)", () => {
 
       expect(result.isFailure).toBe(true);
       expect(result.error()).toBeInstanceOf(UserAlreadyExistsError);
+      expect((result.error() as UserAlreadyExistsError).message).toBe("User with this email already exists");
+
       expect(userRepository.save).not.toHaveBeenCalled();
       expect(emailService.sendConfirmationEmail).not.toHaveBeenCalled();
     });
@@ -71,6 +81,9 @@ describe("RegisterUserUseCase (Sociable Unit Test)", () => {
       const result = await useCase.execute({ name, email, password });
 
       expect(result.isFailure).toBe(true);
+      expect(result.error()).toBeInstanceOf(ValidationError);
+      expect((result.error() as ValidationError).message).toBe("Invalid email format");
+
       expect(userRepository.save).not.toHaveBeenCalled();
       expect(emailService.sendConfirmationEmail).not.toHaveBeenCalled();
     });
@@ -83,6 +96,24 @@ describe("RegisterUserUseCase (Sociable Unit Test)", () => {
       const result = await useCase.execute({ name, email, password });
 
       expect(result.isFailure).toBe(true);
+      expect(result.error()).toBeInstanceOf(ValidationError);
+      expect((result.error() as ValidationError).message).toBe("Password must be at least 8 characters long");
+
+      expect(userRepository.save).not.toHaveBeenCalled();
+      expect(emailService.sendConfirmationEmail).not.toHaveBeenCalled();
+    });
+
+    it("should validate name requirements", async () => {
+      const email = "test@example.com";
+      const password = "ValidPassword123!";
+      const name = "";
+
+      const result = await useCase.execute({ name, email, password });
+
+      expect(result.isFailure).toBe(true);
+      expect(result.error()).toBeInstanceOf(ValidationError);
+      expect((result.error() as ValidationError).message).toBe("Name is required.");
+
       expect(userRepository.save).not.toHaveBeenCalled();
       expect(emailService.sendConfirmationEmail).not.toHaveBeenCalled();
     });
