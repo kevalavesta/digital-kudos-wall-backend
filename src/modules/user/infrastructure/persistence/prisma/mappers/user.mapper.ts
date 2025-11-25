@@ -10,12 +10,22 @@ export class UserMapper {
     const passwordOrError = Password.reconstitute(prismaUser.password); // Assumes this method exists in Password VO
 
     if (emailOrError.isFailure) {
-      console.error("Error creating Email VO from Prisma data:", emailOrError.error());
-      throw new Error(`Failed to map email for user ${prismaUser.id}. Reason: ${emailOrError.error()}`);
+      console.error(
+        "Error creating Email VO from Prisma data:",
+        emailOrError.error(),
+      );
+      throw new Error(
+        `Failed to map email for user ${prismaUser.id}. Reason: ${emailOrError.error()}`,
+      );
     }
     if (passwordOrError.isFailure) {
-      console.error("Error reconstituting Password VO from Prisma data:", passwordOrError.error());
-      throw new Error(`Failed to map password for user ${prismaUser.id}. Reason: ${passwordOrError.error()}`);
+      console.error(
+        "Error reconstituting Password VO from Prisma data:",
+        passwordOrError.error(),
+      );
+      throw new Error(
+        `Failed to map password for user ${prismaUser.id}. Reason: ${passwordOrError.error()}`,
+      );
     }
 
     const userSnapshot: UserSnapshot = {
@@ -31,8 +41,13 @@ export class UserMapper {
     const userOrError = User.reconstitute(userSnapshot);
 
     if (userOrError.isFailure) {
-      console.error("Error reconstituting User entity from Prisma data:", userOrError.error());
-      throw new Error(`Failed to reconstitute user ${prismaUser.id}. Reason: ${userOrError.error()}`);
+      console.error(
+        "Error reconstituting User entity from Prisma data:",
+        userOrError.error(),
+      );
+      throw new Error(
+        `Failed to reconstitute user ${prismaUser.id}. Reason: ${userOrError.error()}`,
+      );
     }
 
     return userOrError.getValue();

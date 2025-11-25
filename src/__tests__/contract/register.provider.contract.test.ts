@@ -26,7 +26,10 @@ describe("Pact Verification", () => {
     sendConfirmationEmail: jest.fn(),
   };
 
-  const registerUserUseCase = new RegisterUserUseCase(mockUserRepository, mockEmailService);
+  const registerUserUseCase = new RegisterUserUseCase(
+    mockUserRepository,
+    mockEmailService,
+  );
   const loginUseCase = new LoginUseCase(mockUserRepository);
 
   const app = express();
@@ -49,11 +52,14 @@ describe("Pact Verification", () => {
   const pactBrokerToken = process.env.PACT_BROKER_TOKEN;
   const pactUrl = process.env.PACT_URL;
   const gitSha = process.env.GITHUB_SHA || process.env.GIT_COMMIT || "local";
-  const branch = process.env.GITHUB_REF_NAME || process.env.GIT_BRANCH || "main";
+  const branch =
+    process.env.GITHUB_REF_NAME || process.env.GIT_BRANCH || "main";
 
   // Skip if we don't have either broker config or local pact file
   if (!pactBrokerUrl && !pactUrl) {
-    console.log("Skipping Pact verification. Neither PACT_BROKER_BASE_URL nor PACT_URL is set.");
+    console.log(
+      "Skipping Pact verification. Neither PACT_BROKER_BASE_URL nor PACT_URL is set.",
+    );
     test("skipping pact verification", () => {});
     return;
   }
@@ -65,11 +71,16 @@ describe("Pact Verification", () => {
         providerBaseUrl: `http://localhost:${port}`,
         logLevel: "info",
         stateHandlers: {
-          "a user with email pact-test@example.com does not exist": async () => {
-            (mockUserRepository.findByEmail as jest.Mock).mockResolvedValue(null);
-            (mockUserRepository.save as jest.Mock).mockImplementation((user: User) => Promise.resolve(user));
-            return Promise.resolve("User does not exist state set up");
-          },
+          "a user with email pact-test@example.com does not exist":
+            async () => {
+              (mockUserRepository.findByEmail as jest.Mock).mockResolvedValue(
+                null,
+              );
+              (mockUserRepository.save as jest.Mock).mockImplementation(
+                (user: User) => Promise.resolve(user),
+              );
+              return Promise.resolve("User does not exist state set up");
+            },
           "a user with email existing@example.com already exists": async () => {
             (mockUserRepository.findByEmail as jest.Mock).mockResolvedValue({
               id: "any-id",
@@ -78,7 +89,8 @@ describe("Pact Verification", () => {
             return Promise.resolve("User already exists state set up");
           },
           "a user exists with email pact-test@example.com": async () => {
-            const hashedPasswordResult = await Password.create("ValidPassword123!");
+            const hashedPasswordResult =
+              await Password.create("ValidPassword123!");
             const emailResult = Email.create("pact-test@example.com");
 
             if (hashedPasswordResult.isFailure || emailResult.isFailure) {
@@ -92,14 +104,16 @@ describe("Pact Verification", () => {
                 password: hashedPasswordResult.getValue(),
                 isEmailVerified: false,
               },
-              new UniqueEntityID("some-id")
+              new UniqueEntityID("some-id"),
             );
 
             if (existingUser.isFailure) {
               throw new Error("Failed to create test user");
             }
 
-            (mockUserRepository.findByEmail as jest.Mock).mockResolvedValue(existingUser.getValue());
+            (mockUserRepository.findByEmail as jest.Mock).mockResolvedValue(
+              existingUser.getValue(),
+            );
             return Promise.resolve("User exists state set up");
           },
         },
@@ -113,7 +127,11 @@ describe("Pact Verification", () => {
           publishVerificationResult: true,
           providerVersion: gitSha,
           providerVersionBranch: branch,
-          consumerVersionSelectors: [{ mainBranch: true }, { branch }, { deployedOrReleased: true }],
+          consumerVersionSelectors: [
+            { mainBranch: true },
+            { branch },
+            { deployedOrReleased: true },
+          ],
         });
       }
       // Otherwise use local pact file

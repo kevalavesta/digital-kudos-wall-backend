@@ -24,7 +24,10 @@ describe("PrismaUserRepository (Narrow Integration)", () => {
 
   describe("save", () => {
     it("should save a new user to the database", async () => {
-      const newUser = new UserBuilder().withEmail("new.user@example.com").withPassword("ValidPass123!").build();
+      const newUser = new UserBuilder()
+        .withEmail("new.user@example.com")
+        .withPassword("ValidPass123!")
+        .build();
 
       await userRepository.save(newUser);
 
@@ -38,10 +41,17 @@ describe("PrismaUserRepository (Narrow Integration)", () => {
 
     it("should update an existing user in the database", async () => {
       const email = "existing.user@example.com";
-      const existingUser = new UserBuilder().withEmail(email).withIsEmailVerified(false).build();
+      const existingUser = new UserBuilder()
+        .withEmail(email)
+        .withIsEmailVerified(false)
+        .build();
       await userRepository.save(existingUser);
 
-      const updatedUser = new UserBuilder().withEmail(email).withIsEmailVerified(true).withId(existingUser.id).build();
+      const updatedUser = new UserBuilder()
+        .withEmail(email)
+        .withIsEmailVerified(true)
+        .withId(existingUser.id)
+        .build();
       await userRepository.save(updatedUser);
 
       const updatedUserInDb = await prisma.user.findUnique({
@@ -54,7 +64,9 @@ describe("PrismaUserRepository (Narrow Integration)", () => {
 
   describe("findByEmail", () => {
     it("should return a user entity when a user with the given email exists", async () => {
-      const existingUser = new UserBuilder().withEmail("find.me@example.com").build();
+      const existingUser = new UserBuilder()
+        .withEmail("find.me@example.com")
+        .build();
       await userRepository.save(existingUser);
 
       const foundUser = await userRepository.findByEmail("find.me@example.com");
@@ -64,7 +76,9 @@ describe("PrismaUserRepository (Narrow Integration)", () => {
     });
 
     it("should return null when no user with the given email exists", async () => {
-      const foundUser = await userRepository.findByEmail("non.existent@example.com");
+      const foundUser = await userRepository.findByEmail(
+        "non.existent@example.com",
+      );
 
       expect(foundUser).toBeNull();
     });
@@ -83,7 +97,9 @@ describe("PrismaUserRepository (Narrow Integration)", () => {
     });
 
     it("should return null when no user with the given id exists", async () => {
-      const foundUser = await userRepository.findById(new UniqueEntityID().toString());
+      const foundUser = await userRepository.findById(
+        new UniqueEntityID().toString(),
+      );
 
       expect(foundUser).toBeNull();
     });

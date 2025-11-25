@@ -25,7 +25,10 @@ describe("App Component Tests", () => {
   describe("GET /", () => {
     test("should return welcome message", async () => {
       const app = createApp({
-        registerUserUseCase: new RegisterUserUseCase(mockUserRepository, mockEmailService),
+        registerUserUseCase: new RegisterUserUseCase(
+          mockUserRepository,
+          mockEmailService,
+        ),
         loginUseCase: new LoginUseCase(mockUserRepository),
       });
       const response = await request(app).get("/").expect(200);
@@ -44,7 +47,10 @@ describe("App Component Tests", () => {
   describe("GET /health", () => {
     test("should return health status", async () => {
       const app = createApp({
-        registerUserUseCase: new RegisterUserUseCase(mockUserRepository, mockEmailService),
+        registerUserUseCase: new RegisterUserUseCase(
+          mockUserRepository,
+          mockEmailService,
+        ),
         loginUseCase: new LoginUseCase(mockUserRepository),
       });
       const response = await request(app).get("/health").expect(200);
@@ -61,7 +67,10 @@ describe("App Component Tests", () => {
   describe("GET /nonexistent", () => {
     test("should return 404 for unknown routes", async () => {
       const app = createApp({
-        registerUserUseCase: new RegisterUserUseCase(mockUserRepository, mockEmailService),
+        registerUserUseCase: new RegisterUserUseCase(
+          mockUserRepository,
+          mockEmailService,
+        ),
         loginUseCase: new LoginUseCase(mockUserRepository),
       });
       const response = await request(app).get("/nonexistent").expect(404);

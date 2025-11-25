@@ -14,10 +14,18 @@ export interface RegisterUserDTO {
   password: string;
 }
 
-export type RegisterUserResponse = Result<User, string | UserAlreadyExistsError | ValidationError>;
+export type RegisterUserResponse = Result<
+  User,
+  string | UserAlreadyExistsError | ValidationError
+>;
 
-export class RegisterUserUseCase implements UseCase<RegisterUserDTO, RegisterUserResponse> {
-  constructor(private readonly userRepository: UserRepository, private readonly emailService: EmailService) {}
+export class RegisterUserUseCase
+  implements UseCase<RegisterUserDTO, RegisterUserResponse>
+{
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly emailService: EmailService,
+  ) {}
 
   async execute(request: RegisterUserDTO): Promise<RegisterUserResponse> {
     if (!request.name) {

@@ -1,5 +1,8 @@
 export class HttpResponse<T = any> {
-  constructor(public readonly statusCode: number, public readonly body: T) {}
+  constructor(
+    public readonly statusCode: number,
+    public readonly body: T,
+  ) {}
 
   static ok<T>(data: T): HttpResponse<T> {
     return new HttpResponse<T>(200, data);

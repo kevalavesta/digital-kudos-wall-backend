@@ -25,7 +25,10 @@ if (process.env.NODE_ENV === "test" || process.env.NODE_ENV === "uat") {
 }
 
 // Initialize use cases with their dependencies
-const registerUserUseCase = new RegisterUserUseCase(userRepository, emailService);
+const registerUserUseCase = new RegisterUserUseCase(
+  userRepository,
+  emailService,
+);
 const loginUseCase = new LoginUseCase(userRepository);
 
 // Create and start the application

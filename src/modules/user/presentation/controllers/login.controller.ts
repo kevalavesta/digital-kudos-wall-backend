@@ -1,5 +1,8 @@
 import { Controller } from "../../../../shared/presentation/controller";
-import { LoginUseCase, LoginDTO } from "../../application/use-cases/login/login.use-case";
+import {
+  LoginUseCase,
+  LoginDTO,
+} from "../../application/use-cases/login/login.use-case";
 import { InvalidCredentialsError } from "../../domain/errors/invalid-credentials.error";
 import { HttpResponse } from "../../../../shared/presentation/http-response";
 import { Request } from "express";
@@ -28,7 +31,10 @@ export class LoginController implements Controller<Request, any> {
         }
 
         return HttpResponse.unauthorized({
-          message: error instanceof InvalidCredentialsError ? error.message : "Invalid email or password",
+          message:
+            error instanceof InvalidCredentialsError
+              ? error.message
+              : "Invalid email or password",
         });
       }
 

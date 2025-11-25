@@ -3,7 +3,11 @@ export class Result<T, E = string> {
   private readonly _error: E | null;
   private readonly _isSuccess: boolean;
 
-  private constructor(isSuccess: boolean, error: E | null = null, value: T | null = null) {
+  private constructor(
+    isSuccess: boolean,
+    error: E | null = null,
+    value: T | null = null,
+  ) {
     this._isSuccess = isSuccess;
     this._error = error;
     this._value = value;

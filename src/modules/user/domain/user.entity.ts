@@ -55,7 +55,7 @@ export class User extends Entity<UserProps> {
         password: snapshot.password,
         isEmailVerified: snapshot.isEmailVerified,
       },
-      snapshot.id
+      snapshot.id,
     );
 
     return Result.ok<User>(user);

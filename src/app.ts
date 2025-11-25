@@ -28,7 +28,10 @@ export function createApp(dependencies: AppDependencies): Application {
       allowedOrigins.push("http://uat.digital-kudos-wall.com:3000");
     } else {
       // If FRONTEND_URL is hostname-based, also allow IP-based
-      const ipBasedUrl = frontendUrl.replace(frontendUrlObj.hostname, "13.201.16.118");
+      const ipBasedUrl = frontendUrl.replace(
+        frontendUrlObj.hostname,
+        "13.201.16.118",
+      );
       allowedOrigins.push(ipBasedUrl);
     }
   }
@@ -37,7 +40,7 @@ export function createApp(dependencies: AppDependencies): Application {
     cors({
       origin: allowedOrigins,
       credentials: true,
-    })
+    }),
   );
 
   app.use(express.json());

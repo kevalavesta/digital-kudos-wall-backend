@@ -39,7 +39,7 @@ export class PrismaUserRepository implements UserRepository {
         password: hashedPassword,
         isEmailVerified: user.isEmailVerified,
       },
-      user.id
+      user.id,
     ).getValue();
 
     const data = UserMapper.toPersistence(userWithHashedPassword);

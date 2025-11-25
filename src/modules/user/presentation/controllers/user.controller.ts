@@ -1,5 +1,8 @@
 import { Controller } from "../../../../shared/presentation/controller";
-import { RegisterUserUseCase, RegisterUserDTO } from "../../application/use-cases/register-user/register-user.use-case";
+import {
+  RegisterUserUseCase,
+  RegisterUserDTO,
+} from "../../application/use-cases/register-user/register-user.use-case";
 import { HttpResponse } from "../../../../shared/presentation/http-response";
 import { UserAlreadyExistsError } from "../../domain/errors/user-already-exists.error";
 import { ValidationError } from "../../domain/errors/validation.error";
@@ -16,7 +19,11 @@ export class UserController implements Controller<Request, any> {
     const { name, email, password }: RegisterUserDTO = request.body;
 
     try {
-      const result = await this.registerUserUseCase.execute({ name, email, password });
+      const result = await this.registerUserUseCase.execute({
+        name,
+        email,
+        password,
+      });
 
       if (result.isSuccess) {
         const user = result.getValue();

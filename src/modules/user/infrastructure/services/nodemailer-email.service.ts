@@ -31,7 +31,10 @@ export class NodemailerEmailService implements EmailService {
 
     try {
       const info = await this.transporter.sendMail(mailOptions);
-      console.log("Confirmation email sent successfully. Message ID:", info.messageId);
+      console.log(
+        "Confirmation email sent successfully. Message ID:",
+        info.messageId,
+      );
     } catch (error) {
       console.error("Error sending confirmation email:", error);
       // For production, consider a more robust error handling/logging strategy

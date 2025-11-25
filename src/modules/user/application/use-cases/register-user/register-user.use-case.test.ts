@@ -37,8 +37,12 @@ describe("RegisterUserUseCase (Sociable Unit Test)", () => {
       };
 
       (userRepository.findByEmail as jest.Mock).mockResolvedValue(null);
-      (userRepository.save as jest.Mock).mockImplementation(() => Promise.resolve());
-      (emailService.sendConfirmationEmail as jest.Mock).mockResolvedValue(undefined);
+      (userRepository.save as jest.Mock).mockImplementation(() =>
+        Promise.resolve(),
+      );
+      (emailService.sendConfirmationEmail as jest.Mock).mockResolvedValue(
+        undefined,
+      );
 
       const result = await useCase.execute(registerUserDTO);
 
@@ -60,14 +64,20 @@ describe("RegisterUserUseCase (Sociable Unit Test)", () => {
       const password = "ValidPassword123!";
       const name = "Existing User";
 
-      const existingUser = userBuilder.withName(name).withEmail(email).withPassword(password).build();
+      const existingUser = userBuilder
+        .withName(name)
+        .withEmail(email)
+        .withPassword(password)
+        .build();
       (userRepository.findByEmail as jest.Mock).mockResolvedValue(existingUser);
 
       const result = await useCase.execute({ name, email, password });
 
       expect(result.isFailure).toBe(true);
       expect(result.error()).toBeInstanceOf(UserAlreadyExistsError);
-      expect((result.error() as UserAlreadyExistsError).message).toBe("User with this email already exists");
+      expect((result.error() as UserAlreadyExistsError).message).toBe(
+        "User with this email already exists",
+      );
 
       expect(userRepository.save).not.toHaveBeenCalled();
       expect(emailService.sendConfirmationEmail).not.toHaveBeenCalled();
@@ -82,7 +92,9 @@ describe("RegisterUserUseCase (Sociable Unit Test)", () => {
 
       expect(result.isFailure).toBe(true);
       expect(result.error()).toBeInstanceOf(ValidationError);
-      expect((result.error() as ValidationError).message).toBe("Invalid email format");
+      expect((result.error() as ValidationError).message).toBe(
+        "Invalid email format",
+      );
 
       expect(userRepository.save).not.toHaveBeenCalled();
       expect(emailService.sendConfirmationEmail).not.toHaveBeenCalled();
@@ -97,7 +109,9 @@ describe("RegisterUserUseCase (Sociable Unit Test)", () => {
 
       expect(result.isFailure).toBe(true);
       expect(result.error()).toBeInstanceOf(ValidationError);
-      expect((result.error() as ValidationError).message).toBe("Password must be at least 8 characters long");
+      expect((result.error() as ValidationError).message).toBe(
+        "Password must be at least 8 characters long",
+      );
 
       expect(userRepository.save).not.toHaveBeenCalled();
       expect(emailService.sendConfirmationEmail).not.toHaveBeenCalled();
@@ -112,7 +126,9 @@ describe("RegisterUserUseCase (Sociable Unit Test)", () => {
 
       expect(result.isFailure).toBe(true);
       expect(result.error()).toBeInstanceOf(ValidationError);
-      expect((result.error() as ValidationError).message).toBe("Name is required.");
+      expect((result.error() as ValidationError).message).toBe(
+        "Name is required.",
+      );
 
       expect(userRepository.save).not.toHaveBeenCalled();
       expect(emailService.sendConfirmationEmail).not.toHaveBeenCalled();

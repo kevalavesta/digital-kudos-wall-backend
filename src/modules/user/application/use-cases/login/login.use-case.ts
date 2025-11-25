@@ -21,7 +21,9 @@ export interface LoginResponse {
 
 type LoginError = InvalidCredentialsError | ValidationError;
 
-export class LoginUseCase implements UseCase<LoginDTO, Result<LoginResponse, LoginError>> {
+export class LoginUseCase
+  implements UseCase<LoginDTO, Result<LoginResponse, LoginError>>
+{
   constructor(private readonly userRepository: UserRepository) {}
 
   async execute(request: LoginDTO): Promise<Result<LoginResponse, LoginError>> {
@@ -35,7 +37,9 @@ export class LoginUseCase implements UseCase<LoginDTO, Result<LoginResponse, Log
       return Result.fail(new InvalidCredentialsError());
     }
 
-    const isPasswordValid = await user.password.comparePassword(request.password);
+    const isPasswordValid = await user.password.comparePassword(
+      request.password,
+    );
     if (!isPasswordValid) {
       return Result.fail(new InvalidCredentialsError());
     }

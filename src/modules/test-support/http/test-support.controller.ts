@@ -7,7 +7,7 @@ import { TestEmailService } from "../../user/infrastructure/services/test-email.
 export class TestSupportController {
   constructor(
     private readonly createTestUserUseCase: CreateTestUserUseCase,
-    private readonly cleanupTestDataUseCase: CleanupTestDataUseCase
+    private readonly cleanupTestDataUseCase: CleanupTestDataUseCase,
   ) {}
 
   async createUser(req: Request, res: Response): Promise<Response> {
@@ -15,10 +15,16 @@ export class TestSupportController {
       const { name, email, password } = req.body as RegisterUserDTO;
 
       if (!name || !email || !password) {
-        return res.status(400).json({ error: "Missing required fields: name, email, password" });
+        return res
+          .status(400)
+          .json({ error: "Missing required fields: name, email, password" });
       }
 
-      const user = await this.createTestUserUseCase.execute({ name, email, password });
+      const user = await this.createTestUserUseCase.execute({
+        name,
+        email,
+        password,
+      });
       return res.status(201).json(user);
     } catch (error: any) {
       return res.status(500).json({
@@ -34,7 +40,9 @@ export class TestSupportController {
       // Also reset the email service stub
       TestEmailService.getInstance().reset();
 
-      return res.status(200).json({ message: "Test data cleaned up successfully" });
+      return res
+        .status(200)
+        .json({ message: "Test data cleaned up successfully" });
     } catch (error: any) {
       console.error("Failed to cleanup test data:", error);
       return res.status(500).json({
@@ -49,7 +57,9 @@ export class TestSupportController {
       const { email } = req.query;
 
       if (!email || typeof email !== "string") {
-        return res.status(400).json({ error: "Missing required query parameter: email" });
+        return res
+          .status(400)
+          .json({ error: "Missing required query parameter: email" });
       }
 
       const emailService = TestEmailService.getInstance();
