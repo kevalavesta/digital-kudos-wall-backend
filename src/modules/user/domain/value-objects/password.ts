@@ -38,7 +38,9 @@ export class Password extends ValueObject<PasswordProps> {
     return Result.ok(new Password({ value: password, hashed: false }));
   }
 
-  public static createHashed(hashedPassword: string): Result<Password, ValidationError> {
+  public static createHashed(
+    hashedPassword: string,
+  ): Result<Password, ValidationError> {
     return Result.ok(new Password({ value: hashedPassword, hashed: true }));
   }
 
@@ -67,11 +69,17 @@ export class Password extends ValueObject<PasswordProps> {
     return Password.createHashed(hashedPassword).getValue();
   }
 
-  public static reconstitute(hashedPassword: string): Result<Password, ValidationError> {
+  public static reconstitute(
+    hashedPassword: string,
+  ): Result<Password, ValidationError> {
     if (!hashedPassword || hashedPassword.length === 0) {
-      return Result.fail(new ValidationError("Stored password cannot be empty."));
+      return Result.fail(
+        new ValidationError("Stored password cannot be empty."),
+      );
     }
 
-    return Result.ok<Password, ValidationError>(new Password({ value: hashedPassword, hashed: true }));
+    return Result.ok<Password, ValidationError>(
+      new Password({ value: hashedPassword, hashed: true }),
+    );
   }
 }

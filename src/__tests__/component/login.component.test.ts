@@ -57,7 +57,10 @@ describe("Login API (Component Test)", () => {
       };
 
       // Act & Assert
-      const response = await request(app).post("/users/login").send(requestBody).expect(200);
+      const response = await request(app)
+        .post("/users/login")
+        .send(requestBody)
+        .expect(200);
 
       // Verify response structure
       expect(response.body).toHaveProperty("token");
@@ -72,7 +75,9 @@ describe("Login API (Component Test)", () => {
       });
 
       // Verify repository was called correctly
-      expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(requestBody.email);
+      expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
+        requestBody.email,
+      );
     });
 
     it("should return 401 when credentials are invalid", async () => {
@@ -85,7 +90,10 @@ describe("Login API (Component Test)", () => {
       };
 
       // Act & Assert
-      const response = await request(app).post("/users/login").send(requestBody).expect(401);
+      const response = await request(app)
+        .post("/users/login")
+        .send(requestBody)
+        .expect(401);
 
       expect(response.body).toEqual({
         message: "Invalid email or password",
@@ -100,12 +108,17 @@ describe("Login API (Component Test)", () => {
       };
 
       // Act & Assert
-      await request(app).post("/users/login").send(invalidRequestBody).expect(400);
+      await request(app)
+        .post("/users/login")
+        .send(invalidRequestBody)
+        .expect(400);
     });
 
     it("should return 500 when an unexpected error occurs", async () => {
       // Arrange
-      mockUserRepository.findByEmail.mockRejectedValue(new Error("Database error"));
+      mockUserRepository.findByEmail.mockRejectedValue(
+        new Error("Database error"),
+      );
 
       const requestBody = {
         email: "test@example.com",
@@ -113,7 +126,10 @@ describe("Login API (Component Test)", () => {
       };
 
       // Act & Assert
-      const response = await request(app).post("/users/login").send(requestBody).expect(500);
+      const response = await request(app)
+        .post("/users/login")
+        .send(requestBody)
+        .expect(500);
 
       expect(response.body).toEqual({
         message: "An unexpected error occurred",
